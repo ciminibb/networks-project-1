@@ -74,6 +74,7 @@ final class HttpRequest implements Runnable {
 
         System.out.println();
         System.out.println("REQUEST");
+        System.out.println("---------------------------------------------------");
         System.out.println(requestLine);
 
         // Do the same for header lines with a loop, as the number is unknown.
@@ -135,11 +136,12 @@ final class HttpRequest implements Runnable {
         // Output response message to confirm correctness.
         System.out.println();
         System.out.println("RESPONSE");
+        System.out.println("---------------------------------------------------");
         System.out.println(statusLine);
         System.out.println(contentTypeLine);
-
-        if (fileExists) {
-            System.out.println(entityBody);
+        
+        if (!fileExists) {
+            System.out.println("Not Found");
         }
 
         // Send <statusLine> and <contentTypeLine> to browser by writing to
