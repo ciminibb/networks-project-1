@@ -120,17 +120,43 @@ final class HttpRequest implements Runnable {
         }
         else {
             // Respond with "404 Not Found" if the requested file doesn't exist.
-            statusLine = "HTTP/1.0 404 Not Found" + CRLF;
-            contentTypeLine = "Content-type: text/html" + CRLF; // The response
-                                                                // content when
-                                                                // file doesn't
-                                                                // exist is
-                                                                // always HTML
-                                                                // text.
-            entityBody =
-                "<HTML>"
-                + "<HEAD><TITLE>Not Found</TITLE></HEAD>"
-                + "<BODY>Not Found</BODY></HTML>";
+            // That is, of course, unless said file is a text file, in which case
+            // we must go get it from an FTP server.
+            if (!contentType(fileName).equalsIgnoreCase("text/plain")) {
+                statusLine = "HTTP/1.0 404 Not Found" + CRLF;
+                contentTypeLine = "Content-type: text/html" + CRLF;
+                entityBody =
+                    "<HTML>"
+                    + "<HEAD><TITLE>Not Found</TITLE></HEAD>"
+                    + "<BODY>Not Found</BODY></HTML>";
+            }
+            else {
+                fileExists = true; // The file actually does exist haha!
+                
+                statusLine = "HTTP/1.0 200 OK" + CRLF;
+                contentTypeLine = "Content-type: " + contentType(fileName) + CRLF;
+
+                // Create an <FtpClient> object. I'm calling it <jeremy> because
+                // it's funny. Give me a break.
+                FtpClient jeremy = new FtpClient();
+
+                // Connect to the server where the file lives. The hardcoded
+                // <username> and <password> are for the FTP server that I, Ben
+                // Cimini, made. To run this code on another server, those
+                // arguments will need to change. Be nice.
+                jeremy.connect("ciminibb", "cs4065$$GIO");
+
+                // Retrieve file from the server.
+                jeremy.getFile(fileName);
+
+                // Disconnect from the server.
+                jeremy.disconnect();
+
+                // Retroactively assign <fis>, the input stream, to the newly-
+                // downloaded file. To get here, an earlier attempt at creating
+                // <fis> failed because the file wasn't found in this directory.
+                fis = new FileInputStream(fileName);
+            }
         }
 
         // Output response message to confirm correctness.
@@ -194,6 +220,11 @@ final class HttpRequest implements Runnable {
         // This server should handle GIF images.
         if (fileName.endsWith(".gif")) {
             return "image/gif";
+        }
+
+        // This server should handle text files.
+        if (fileName.endsWith(".txt")) {
+            return "text/plain";
         }
 
         // Many other content types are ignored by this server.
