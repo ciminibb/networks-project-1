@@ -1,3 +1,5 @@
+import webserver.FtpClient;
+
 public class FtpTest {
     public static void main(String argv[]) {
         // Create instance of <FtpClient>.
